@@ -1,0 +1,41 @@
+
+# prompts.txt - AI Assistance Prompts Used
+
+## Purpose
+Record of all AI prompts used for generating or modifying code during the Wrangler enhancement .
+
+---
+
+### [1] Enhance Wrangler Grammar
+Prompt:
+"Add support for BYTE_SIZE and TIME_DURATION in Directives.g4 grammar, including lexer and parser rules."
+
+### [2] Create ByteSize and TimeDuration Java classes
+Prompt:
+"Generate a Java class called ByteSize that extends Token and parses values like '10MB', '1.5GB' with getBytes()."
+
+Prompt:
+"Generate a Java class called TimeDuration that parses values like '500ms', '2s' into nanoseconds using getNanos()."
+
+### [3] RecipeVisitor.java Extension
+Prompt:
+"Add visit methods for BYTE_SIZE and TIME_DURATION in RecipeVisitor.java that add corresponding token to the builder."
+
+### [4] AggregateStats Directive
+Prompt:
+"Implement a Wrangler directive aggregate-stats that sums up byte size and time duration columns using new ByteSize and TimeDuration tokens."
+
+### [5] Unit Test Generation
+Prompt:
+"Generate JUnit test cases for ByteSize.java and TimeDuration.java covering valid and invalid inputs."
+
+Prompt:
+"Write unit tests for AggregateStats directive using TestingRig and assert expected aggregate values."
+
+### [6] README.md and prompts.txt Generation
+Prompt:
+"Generate a professional README.md summarizing grammar, code, test enhancements and usage for Zeotap internship assignment."
+Prompt:
+"Create a prompts.txt file listing all AI prompts used in this assignment."
+
+---
