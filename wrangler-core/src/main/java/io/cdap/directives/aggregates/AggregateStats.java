@@ -1,64 +1,64 @@
 package io.cdap.wrangler.directives.aggregates;
 
-import io.cdap.wrangler.api.Row;
-import io.cdap.wrangler.api.Directive;
-import io.cdap.wrangler.api.DirectiveContext;
-import io.cdap.wrangler.api.annotations.Name;
+import io.cdap.wrangler.api.*;
 import io.cdap.wrangler.api.annotations.Description;
-import io.cdap.wrangler.api.annotations.Scope;
+import io.cdap.wrangler.api.annotations.Name;
 import io.cdap.wrangler.api.annotations.Plugin;
-import io.cdap.wrangler.api.parser.DirectiveArguments;
-import io.cdap.wrangler.api.parser.Text;
-import io.cdap.wrangler.api.parser.Arguments;
+import io.cdap.wrangler.api.annotations.Scope;
+import io.cdap.wrangler.api.parser.*;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Plugin(type = Directive.TYPE)
 @Name("aggregate-stats")
-@Description("Computes basic aggregate statistics like min, max, avg, and sum for a numeric column")
+@Description("Aggregates total size and time from given columns, with optional unit conversion.")
 @Scope(Scope.Type.TRANSFORM)
 public class AggregateStats implements Directive {
-  private String column;
+  private String sizeCol;
+  private String timeCol;
+  private String outputSizeCol;
+  private String outputTimeCol;
 
   @Override
   public void initialize(DirectiveContext ctx, DirectiveArguments args) {
-    column = ((Text) args.value("column")).value();
+    sizeCol = ((ColumnName) args.value("sizeCol")).value();
+    timeCol = ((ColumnName) args.value("timeCol")).value();
+    outputSizeCol = ((ColumnName) args.value("outputSizeCol")).value();
+    outputTimeCol = ((ColumnName) args.value("outputTimeCol")).value();
   }
 
   @Override
-  public List<Row> execute(List<Row> rows, ExecutorContext ctx) {
-    if (rows.isEmpty()) {
-      return rows;
-    }
-
-    double sum = 0;
-    double min = Double.MAX_VALUE;
-    double max = Double.MIN_VALUE;
+  public List<Row> execute(List<Row> rows, ExecutorContext ctx) throws DirectiveExecutionException {
+    long totalBytes = 0;
+    long totalNanos = 0;
     int count = 0;
 
     for (Row row : rows) {
-      Object val = row.getValue(column);
-      if (val instanceof Number) {
-        double number = ((Number) val).doubleValue();
-        sum += number;
-        min = Math.min(min, number);
-        max = Math.max(max, number);
-        count++;
+      Object sizeObj = row.getValue(sizeCol);
+      Object timeObj = row.getValue(timeCol);
+
+      if (sizeObj instanceof String && timeObj instanceof String) {
+        try {
+          long bytes = new io.cdap.wrangler.api.parser.ByteSize((String) sizeObj).getBytes();
+          long nanos = new io.cdap.wrangler.api.parser.TimeDuration((String) timeObj).getNanos();
+          totalBytes += bytes;
+          totalNanos += nanos;
+          count++;
+        } catch (IllegalArgumentException e) {
+          throw new DirectiveExecutionException("Failed to parse ByteSize or TimeDuration", e);
+        }
       }
     }
 
-    double avg = count == 0 ? 0 : sum / count;
+    double totalMB = totalBytes / (1024.0 * 1024);
+    double totalSeconds = totalNanos / 1_000_000_000.0;
 
-    Row statRow = new Row("column", column);
-    statRow.add("sum", sum);
-    statRow.add("min", min);
-    statRow.add("max", max);
-    statRow.add("avg", avg);
-    statRow.add("count", count);
-
-    return Collections.singletonList(statRow);
+    Row result = new Row();
+    result.add(outputSizeCol, totalMB);
+    result.add(outputTimeCol, totalSeconds);
+    return Collections.singletonList(result);
   }
 }
+
 
