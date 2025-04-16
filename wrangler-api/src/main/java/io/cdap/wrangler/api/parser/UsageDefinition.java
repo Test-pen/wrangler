@@ -246,3 +246,4 @@ public final class UsageDefinition implements Serializable {
     }
   }
 }
+
