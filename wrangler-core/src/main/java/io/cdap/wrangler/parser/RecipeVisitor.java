@@ -316,14 +316,27 @@ public final class RecipeVisitor extends DirectivesBaseVisitor<RecipeSymbol.Buil
     builder.addToken(new TextList(strs));
     return builder;
   }
+@Override
+public RecipeSymbol.Builder visitBytesize(DirectivesParser.BytesizeContext ctx) {
+String value = ctx.BYTESIZE().getText();
+builder.addToken(new io.cdap.wrangler.api.parser.ByteSize(value));
+return builder;
+}
 
-  private SourceInfo getOriginalSource(ParserRuleContext ctx) {
-    int a = ctx.getStart().getStartIndex();
-    int b = ctx.getStop().getStopIndex();
-    Interval interval = new Interval(a, b);
-    String text = ctx.start.getInputStream().getText(interval);
-    int lineno = ctx.getStart().getLine();
-    int column = ctx.getStart().getCharPositionInLine();
-    return new SourceInfo(lineno, column, text);
+@Override
+public RecipeSymbol.Builder visitTimeduration(DirectivesParser.TimedurationContext ctx) {
+String value = ctx.TIMEDURATION().getText();
+builder.addToken(new io.cdap.wrangler.api.parser.TimeDuration(value));
+return builder;
+}
+
+private SourceInfo getOriginalSource(ParserRuleContext ctx) {
+  int a = ctx.getStart().getStartIndex();
+  int b = ctx.getStop().getStopIndex();
+  Interval interval = new Interval(a, b);
+  String text = ctx.start.getInputStream().getText(interval);
+  int lineno = ctx.getStart().getLine();
+  int column = ctx.getStart().getCharPositionInLine();
+  return new SourceInfo(lineno, column, text);
   }
 }
