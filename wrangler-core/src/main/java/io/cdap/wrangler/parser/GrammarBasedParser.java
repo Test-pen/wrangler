@@ -28,6 +28,8 @@ import io.cdap.wrangler.api.RecipeParser;
 import io.cdap.wrangler.api.parser.UsageDefinition;
 import io.cdap.wrangler.registry.DirectiveInfo;
 import io.cdap.wrangler.registry.DirectiveRegistry;
+import io.cdap.wrangler.api.parser.ByteSize;
+import io.cdap.wrangler.api.parser.TimeDuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +87,17 @@ public class GrammarBasedParser implements RecipeParser {
           Directive directive = info.instance();
           UsageDefinition definition = directive.define();
           Arguments arguments = new MapArguments(definition, tokenGroup);
+
+          // ByteSize / TimeDuration handling
+          for (int i = 0; i < tokenGroup.size(); i++) {
+            String text = tokenGroup.get(i).value();
+            if (text.matches("-?[0-9]+(\\.[0-9]+)?(B|KB|MB|GB|TB)")) {
+              tokenGroup.set(i, new ByteSize(text));
+            } else if (text.matches("-?[0-9]+(\\.[0-9]+)?(ms|s|sec|min)")) {
+              tokenGroup.set(i, new TimeDuration(text));
+            }
+          }
+
           directive.initialize(arguments);
           result.add(directive);
 
