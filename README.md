@@ -31,8 +31,6 @@ This enhancement adds native support for Byte Size (e.g., KB, MB, GB) and Time D
 - Directive test (AggregateStatsTest.java)
 
 ## Example Usage
-
-```text
 aggregate-stats :data_transfer_size :response_time total_size_mb total_time_sec
 Build & Test
 Run:
